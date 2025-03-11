@@ -1,51 +1,55 @@
-import { Alert, NativeModules, PermissionsAndroid, Platform } from "react-native";
-import DeviceInfo from "react-native-device-info";
-import SimCardsManager from "react-native-sim-cards-manager";
-import { KToast } from "../component/KToast";
-import { CommonDialog } from "../component/CommonDialog";
-import { DialogResult } from "../model/Types";
-import { sleep } from "./utils";
+import {NativeModules, PermissionsAndroid, Platform} from 'react-native';
+import SimCardsManager from 'react-native-sim-cards-manager';
+import {KToast} from '../components/KToast';
+import {CommonDialog} from '../components/CommonDialog';
+import {DialogResult} from '../models/Types';
+import {sleep} from './utils';
 
 export class NativeHelper {
+    async handleBackPress(): Promise<void> {
+        const {InitiationModule} = NativeModules;
 
-  async handleBackPress() {
-    const {InitiationModule} = NativeModules;
+        const confirmed = await CommonDialog.shotwAsync(
+            '종료',
+            '앱을 종료 하시겠습니까?',
+            true,
+        );
+        if (confirmed === DialogResult.Confirmed) {
+            await sleep(100);
 
-    const confirmed = await CommonDialog.shotwAsync('종료', '앱을 종료 하시겠습니까?', true);
-    if(confirmed === DialogResult.Confirmed) {
-        await sleep(100);
-
-        InitiationModule.finishApp();
+            InitiationModule.finishApp();
+        }
     }
-  }
 
-  static async getPhoneNumber(): Promise<string | null> {
-      if(Platform.OS !== 'android') {
-          return '';
-      } 
-      
-      try {
-          // 권한 요청
-          const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE);
-          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            const simInfo = await SimCardsManager.getSimCards();
-            if (simInfo.length > 0 && simInfo[0].number) {
-              return simInfo[0].number;
-            }
-          }
-        } catch (error) {
-          KToast.showToast('휴대폰 번호 가져오기 실패');
-          return '';
+    static async getPhoneNumber(): Promise<string | null> {
+        if (Platform.OS !== 'android') {
+            return '';
         }
 
+        try {
+            // 권한 요청
+            const stateGranted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
+                {
+                    title: '휴대폰 정보 권한',
+                    message: '휴대폰 모델명을 받기 위한 권한 설정',
+                    buttonNeutral: '다음에',
+                    buttonNegative: '아니요',
+                    buttonPositive: '예',
+                },
+            );
+
+            if (stateGranted === PermissionsAndroid.RESULTS.GRANTED) {
+                const simInfo = await SimCardsManager.getSimCards();
+                if (simInfo.length > 0 && simInfo[0].phoneNumber) {
+                    console.log(simInfo[0]);
+                    return simInfo[0].phoneNumber;
+                }
+            }
+        } catch (error) {
+            KToast.showToast(`${error}`);
+            return '';
+        }
         return '';
-      }
-
-  static getDeviceModel(): any {
-      const modelNm = DeviceInfo.getModel;
-      const uID = DeviceInfo.getUniqueId;
-
-      return {modelNm: String, uID: String};
-  }
+    }
 }
-
