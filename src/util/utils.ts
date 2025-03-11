@@ -1,11 +1,10 @@
 import {Dimensions} from 'react-native';
 import moment from 'moment';
-import { NativeModules } from 'react-native';
+import {NativeModules} from 'react-native';
 import AesLib from 'react-native-aes-crypto';
 const Aes: typeof AesLib = NativeModules.Aes;
 
 export class Utils {
-
     static isNumeric(str: string): boolean {
         return !isNaN(Number(str));
     }
@@ -36,7 +35,11 @@ export class Utils {
         return regExp.test(email);
     }
 
-    static changeFormat(sourceTime: string, sourceFormat: string, targetFormat: string) {
+    static changeFormat(
+        sourceTime: string,
+        sourceFormat: string,
+        targetFormat: string,
+    ) {
         try {
             let theTime = moment(sourceTime, sourceFormat);
             return theTime.format(targetFormat);
@@ -44,7 +47,6 @@ export class Utils {
             console.error(e);
         }
         return null;
-
     }
 
     static convertPxToVh = (pixel: number) => {
@@ -70,7 +72,10 @@ export class Utils {
         return null;
     };
 
-    static dateStringFromMilliSeconds = (milliseconds: number, format: string) => {
+    static dateStringFromMilliSeconds = (
+        milliseconds: number,
+        format: string,
+    ) => {
         try {
             return moment(milliseconds).format(format);
         } catch (error) {
@@ -78,8 +83,6 @@ export class Utils {
         }
         return null;
     };
-
-
 
     static dateMonthAgo = (date: Date, month = 1) => {
         return moment(date).subtract(month, 'month').toDate();
@@ -108,12 +111,23 @@ export class Utils {
 
     static isImageFile(filename: string): boolean {
         let fileType = this.getFileExtension(filename);
-        return fileType === 'jpg' || fileType === 'png' || fileType === 'gif' || fileType === 'jpeg' || fileType === 'bmp'
-            || fileType === 'svg' || fileType === 'webp';
+        return (
+            fileType === 'jpg' ||
+            fileType === 'png' ||
+            fileType === 'gif' ||
+            fileType === 'jpeg' ||
+            fileType === 'bmp' ||
+            fileType === 'svg' ||
+            fileType === 'webp'
+        );
     }
 
-    static getFileExtension(filename: string) :string {
-        let ext = filename.substring(filename.lastIndexOf('.') + 1, filename.length) || filename;
+    static getFileExtension(filename: string): string {
+        let ext =
+            filename.substring(
+                filename.lastIndexOf('.') + 1,
+                filename.length,
+            ) || filename;
         return ext.toLowerCase();
     }
 
@@ -122,7 +136,7 @@ export class Utils {
         return this.getMimeType(exp);
     }
 
-    static getMimeType(extension: string) : string {
+    static getMimeType(extension: string): string {
         switch (extension.toLowerCase()) {
             case 'docs':
                 return 'application/msword';
@@ -165,5 +179,5 @@ export class Utils {
     }
 }
 
-export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
+export const sleep = (ms: number) =>
+    new Promise(resolve => setTimeout(resolve, ms));
