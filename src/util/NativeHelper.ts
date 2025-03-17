@@ -6,50 +6,52 @@ import {DialogResult} from '../models/Types';
 import {sleep} from './utils';
 
 export class NativeHelper {
-    async handleBackPress(): Promise<void> {
-        const {InitiationModule} = NativeModules;
+  // 사용 안 하는 기능
+  // async handleBackPress(): Promise<void> {
+  //     const {InitiationModule} = NativeModules;
 
-        const confirmed = await CommonDialog.shotwAsync(
-            '종료',
-            '앱을 종료 하시겠습니까?',
-            true,
-        );
-        if (confirmed === DialogResult.Confirmed) {
-            await sleep(100);
+  //     const confirmed = await CommonDialog.shotwAsync(
+  //         '종료',
+  //         '앱을 종료 하시겠습니까?',
+  //         true,
+  //     );
+  //     if (confirmed === DialogResult.Confirmed) {
+  //         await sleep(100);
 
-            InitiationModule.finishApp();
-        }
+  //         InitiationModule.finishApp();
+  //     }
+  // }
+
+  // 휴대폰 번호 가져옴
+  static async getPhoneInfo(): Promise<string | null> {
+    if (Platform.OS !== 'android') {
+      return '';
     }
 
-    static async getPhoneNumber(): Promise<string | null> {
-        if (Platform.OS !== 'android') {
-            return '';
-        }
+    try {
+      // 권한 요청
+      const stateGranted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
+        {
+          title: '휴대폰 정보 권한',
+          message: '휴대폰 모델명을 받기 위한 권한 설정',
+          buttonNeutral: '다음에',
+          buttonNegative: '아니요',
+          buttonPositive: '예',
+        },
+      );
 
-        try {
-            // 권한 요청
-            const stateGranted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
-                {
-                    title: '휴대폰 정보 권한',
-                    message: '휴대폰 모델명을 받기 위한 권한 설정',
-                    buttonNeutral: '다음에',
-                    buttonNegative: '아니요',
-                    buttonPositive: '예',
-                },
-            );
-
-            if (stateGranted === PermissionsAndroid.RESULTS.GRANTED) {
-                const simInfo = await SimCardsManager.getSimCards();
-                if (simInfo.length > 0 && simInfo[0].phoneNumber) {
-                    console.log(simInfo[0]);
-                    return simInfo[0].phoneNumber;
-                }
-            }
-        } catch (error) {
-            KToast.showToast(`${error}`);
-            return '';
+      if (stateGranted === PermissionsAndroid.RESULTS.GRANTED) {
+        const simInfo = await SimCardsManager.getSimCards();
+        if (simInfo.length > 0 && simInfo[0].phoneNumber) {
+          console.log(simInfo[0]);
+          return simInfo[0].phoneNumber;
         }
-        return '';
+      }
+    } catch (error) {
+      console.log(`${error}`);
+      return '';
     }
+    return '';
+  }
 }
